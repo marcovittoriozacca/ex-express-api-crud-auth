@@ -26,7 +26,7 @@ router.delete('/:slug', checkUser, destroy);
 router.use(validator(passedBody));
 router.post('/', store);
 
-router.put('/:slug', update);
+router.put('/:slug', checkUser, update);
 
 
 module.exports = router;

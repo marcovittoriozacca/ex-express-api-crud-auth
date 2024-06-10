@@ -8,10 +8,15 @@ const checkUser = async (req, res, next) => {
         const postCheck = await prisma.post.findUnique({
             where: {slug},
         })
+        if(!postCheck) return res.status(404).json({status:404, error:"This post doesnt exist"})
+        
         const postUserId = postCheck.userId;
         
         if(postUserId != id){
-            throw new Error ("This post doesn't belong to you. You cant modify it");
+            return res.status(403).json({
+                status: 403,
+                error: "This post doesnt belongs to you. You cant modify it"
+            });
         }
 
         return next();

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
+const cors = require("cors");
 //middlewares
 const notFoundHandler = require('./middlewares/notFoundHandler.js');
 const errorHandler = require('./middlewares/errorHandler.js');
@@ -16,7 +17,7 @@ const app = express();
 const { PORT } = process.env;
 const { HOST } = process.env;
 
-
+app.use(cors());
 app.use(express.json());
 
 app.use("/posts", posts);

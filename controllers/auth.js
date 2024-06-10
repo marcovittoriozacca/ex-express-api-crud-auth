@@ -1,10 +1,10 @@
-const { hashPassword } = require('../utils.js');
+const { hashPassword, comparePassword } = require('../utils.js');
 require('dotenv').config();
 const prisma = require('../prisma/prismaClient.js');
 const { generateToken } = require('../middlewares/auth.js');
 
 
-const store = async (req, res, next) => {
+const register = async (req, res, next) => {
     const { email, name, password } = req.body;
     try{
         const hashedPassword = await hashPassword(password + process.env.PEPPER_KEY);
@@ -36,6 +36,38 @@ const store = async (req, res, next) => {
     
 }
 
+
+const login = async (req, res, next) => {
+    const { email, password } = req.body;
+
+    try{
+        const user = await prisma.user.findUnique({
+            where: {email: email},
+        });
+    
+        if(!user) throw new Error ("This email does not match any of our records");   
+    
+        const checkPassword = await comparePassword(password, user.password);
+    
+        if(!checkPassword) throw new Error ("Wrong Password");
+    
+    
+        const token = generateToken(user);
+        res.json({
+            token,
+            user: {
+                email: user.email,
+                name: user.name || "User",
+            }
+        })
+    }catch(err){
+        next(err);
+    }
+
+    
+}
+
 module.exports = {
-    store
+    register,
+    login
 }

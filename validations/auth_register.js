@@ -31,6 +31,9 @@ const registerBody = {
     },
     password:{
         in: ["body"],
+        notEmpty: {
+            errorMessage: "Password is a require field"
+        },
         isLength:{
             options: {min: 8},
             errorMessage: "The password must be at least 8 characters long",

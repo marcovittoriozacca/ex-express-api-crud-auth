@@ -56,13 +56,6 @@ const show = async (req, res, next) => {
                 },
             },
         })
-        if(!fPost){
-            return res.status(404).json({
-                status: 400,
-                success: false,
-                message: `No post with slug: ${slug} found.`
-            })
-        }
         return res.status(200).json({
         status: 200,
         success: true,

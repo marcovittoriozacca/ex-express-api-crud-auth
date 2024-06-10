@@ -1,6 +1,10 @@
-const { hashPassword, comparePassword } = require('../utils.js');
 require('dotenv').config();
 const prisma = require('../prisma/prismaClient.js');
+
+//utils
+const { hashPassword, comparePassword } = require('../utils.js');
+
+//middlewares
 const { generateToken } = require('../middlewares/auth.js');
 
 

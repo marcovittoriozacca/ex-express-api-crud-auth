@@ -95,15 +95,15 @@ const passedBody = {
 }
 
 const postsSlug = {
-    id:{
+    slug:{
         in: ['params'],
         custom:{
             options: async (value) => {
-                const parsedSlug = String(postsSlug);
+                const parsedSlug = String(value);
                 const matchSlug = await prisma.post.findUnique({
                     where: {slug: parsedSlug}
                 })
-                if(!parsedSlug){
+                if(!matchSlug){
                     throw new Error(`There's no post with slug: ${parsedSlug}`);
                 }
                 return true;

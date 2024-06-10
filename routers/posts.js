@@ -3,7 +3,9 @@ const express = require('express');
 //controller
 const { store, show, index, update, destroy } = require('../controllers/posts.js');
 
+//middlewares
 const { verifyToken } = require('../middlewares/auth.js');
+const { checkUser } = require('../middlewares/checkUser.js');
 
 //validations
 const validator = require('../middlewares/validator.js');
@@ -18,11 +20,12 @@ router.get('/:slug', show);
 
 //middleware that checks the jwt token
 router.use(verifyToken);
-router.delete('/:slug', destroy);
+router.delete('/:slug', checkUser, destroy);
 
 //passedBody contains all validations to create and update posts. only applies to store and update routes
 router.use(validator(passedBody));
 router.post('/', store);
+
 router.put('/:slug', update);
 
 

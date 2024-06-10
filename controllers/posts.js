@@ -3,7 +3,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const store = async (req, res, next) => {
+
+    const userId = req.user.id;
+
     const {title, image, content, published, categoryId, tags} = req.body;
+
     const data = {
         title,
         slug: makeSlug(title),
@@ -11,6 +15,7 @@ const store = async (req, res, next) => {
         content,
         published,
         categoryId,
+        userId,
         tags: {
             connect: tags.map(i => ({id: i}))
         }

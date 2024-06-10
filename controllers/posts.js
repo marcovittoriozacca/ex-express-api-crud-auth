@@ -8,9 +8,30 @@ const store = async (req, res, next) => {
 
     const {title, image, content, published, categoryId, tags} = req.body;
 
+    let slug = makeSlug(title);
+    try{
+        let allSlugs = await prisma.post.findMany({
+            select: {
+                slug: true,
+            }
+        });
+        allSlugs = allSlugs.map(e => e.slug);
+
+        let baseSlug = slug;
+        let counter = 1;
+        while(allSlugs.includes(slug)){
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+
+    }catch(err){
+        return next(err);
+    }
+
+
     const data = {
         title,
-        slug: makeSlug(title),
+        slug,
         image,
         content,
         published,

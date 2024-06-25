@@ -75,19 +75,22 @@ const passedBody = {
             if(values.length === 0){
                 return true;
             }
+            const ids = values.map(id => parseInt(id));
 
-            const checkIntegers = values.find(i => isNaN(parseInt(i)));
-            if(checkIntegers){
+            const checkIds = ids.find(i => isNaN(parseInt(i)));
+            if(checkIds){
                 throw new Error ("One or more IDs are not integers")
+            }else{
+
+                const tagsIds = await prisma.tag.findMany({
+                    where: {id: {in: ids}}
+                })
+                if(tagsIds.length < values.length){
+                    throw new Error('One or more of the passed IDs are not present in the database.')
+                }
+                return true;
             }
 
-            const tagsIds = await prisma.tag.findMany({
-                where: {id: {in: values}}
-            })
-            if(tagsIds.length < values.length){
-                throw new Error('One or more of the passed IDs are not present in the database.')
-            }
-            return true;
         }
     }
    }

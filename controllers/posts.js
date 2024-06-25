@@ -4,10 +4,9 @@ const prisma = new PrismaClient();
 
 const store = async (req, res, next) => {
 
-    const userId = req.user.id;
+    // const userId = req.user.id;
 
-    const {title, image, content, published, categoryId, tags} = req.body;
-
+    const {title, content, published, categoryId, tags} = req.body;
     let slug = makeSlug(title);
     try{
         let allSlugs = await prisma.post.findMany({
@@ -28,19 +27,19 @@ const store = async (req, res, next) => {
         return next(err);
     }
 
-
     const data = {
         title,
         slug,
-        image,
+        image: `posts_pic/${req.file.filename}`,
         content,
-        published,
-        categoryId,
-        userId,
+        published: published === 'true'? true : false,
+        categoryId: parseInt(categoryId),
+        // userId,
         tags: {
-            connect: tags.map(i => ({id: i}))
+            connect: tags.map(i => ({id: parseInt(i)}))
         }
     };
+    
     try{
         const nPost = await prisma.post.create({data})
         res.status(200).json({
@@ -145,6 +144,9 @@ const index = async (req, res, next) => {
             },
             take: parseInt(limit),
             skip: offset,
+            orderBy: {
+                createdAt: 'desc',
+              },
         })
 
         let count = parseInt(postsList.length);
@@ -173,13 +175,91 @@ const index = async (req, res, next) => {
 
 }
 
+const postsByTag = async (req, res, next) => {
+    const {id} = req.params;
+    
+    try{
+    const postsByTag = await prisma.post.findMany({
+        where:{
+            tags:{
+                some:{
+                    id: parseInt(id),
+                }
+            }
+        },
+        include: {
+            category: {
+                select: {
+                    id: true,
+                    name: true,
+                }
+            },
+            tags: {
+                select: {
+                    id: true,
+                    name: true,
+                }
+            },
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+
+    })
+
+    const tag = await prisma.tag.findUnique({
+        where:{id: parseInt(id)}
+    })
+
+    res.json({
+        status: 200,
+        success: true,
+        posts: postsByTag,
+        tag: tag.name
+    })
+
+    }catch(err){
+        return next(err);
+    }
+}
+
+
 const update = async (req, res, next) => {
     let { slug } = req.params;
 
-    const {title, image, content, published, categoryId, tags} = req.body;
+    let {title, image, content, published, categoryId, tags} = req.body;
+
+    published = published === "true"? true : false,
+    categoryId = parseInt(categoryId);
+    tags = tags.map(t => parseInt(t));
+
+    let uniqueSlug = makeSlug(title);
+    try{
+        let allSlugs = await prisma.post.findMany({
+            where:{slug: uniqueSlug},
+            select: {
+                slug: true,
+            },
+        });
+        if(allSlugs.length > 1){
+            allSlugs = allSlugs.map(e => e.slug);
+    
+            let baseSlug = uniqueSlug;
+            let counter = 1;
+            while(allSlugs.includes(uniqueSlug)){
+                uniqueSlug = `${baseSlug}-${counter}`;
+                counter++;
+            }
+        }
+    }catch(err){
+        console.error(err);
+    }
+
+
+
     const data = {
         title,
-        slug: makeSlug(title),
+        slug: uniqueSlug,
         image,
         content,
         published,
@@ -235,5 +315,6 @@ module.exports = {
     show,
     index,
     update,
-    destroy
+    destroy,
+    postsByTag
 }

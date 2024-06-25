@@ -23,6 +23,7 @@ const { HOST } = process.env || "localhost";
 
 const app = express();
 
+app.use(express.static("public"))
 //cors resolution
 app.use(cors());
 
